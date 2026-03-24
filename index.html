@@ -140,10 +140,29 @@
   }
   .related-pill:hover { background: var(--bg2); color: var(--text); }
   .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  .accordion-body {
+    display: none;
+    padding: 16px 14px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--bg2);
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .accordion-body.open { display: block; }
+  .accordion-body .detail-section-label { margin-top: 16px; }
+  .accordion-body .detail-section-label:first-of-type { margin-top: 0; }
   @media (max-width: 680px) {
     .layout { grid-template-columns: 1fr; height: auto; }
-    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-    .detail-pane { padding: 24px 20px; }
+    .sidebar { border-right: none; border-bottom: none; height: auto; overflow-y: visible; }
+    .detail-pane { display: none; }
+    .card { border-radius: var(--radius) var(--radius) 0 0; margin-bottom: 0; border-bottom: none; }
+    .card.active { border-radius: var(--radius) var(--radius) 0 0; }
+    .card-wrapper { margin-bottom: 8px; border: 1px solid transparent; border-radius: var(--radius); overflow: hidden; }
+    .card-wrapper.open { border-color: var(--border2); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .card-wrapper.open .card { background: var(--bg2); border-color: transparent; border-bottom: 1px solid var(--border); }
+  }
+  @media (min-width: 681px) {
+    .card-wrapper { display: contents; }
+    .accordion-body { display: none !important; }
   }
 </style>
 </head>
@@ -292,6 +311,10 @@ catOrder.forEach(cat => {
   sidebar.appendChild(lbl);
 
   terms.filter(t=>t.cat===cat).forEach(t => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "card-wrapper";
+    wrapper.dataset.id = t.id;
+
     const card = document.createElement("div");
     card.className = "card";
     card.dataset.id = t.id;
@@ -300,21 +323,43 @@ catOrder.forEach(cat => {
         <div class="card-title">${t.title}</div>
         <div class="card-short">${t.short}</div>
       </div>`;
-    card.addEventListener("click", () => showDetail(t));
-    sidebar.appendChild(card);
+
+    const acc = document.createElement("div");
+    acc.className = "accordion-body";
+    acc.dataset.id = t.id;
+
+    card.addEventListener("click", () => {
+      const isMobile = window.innerWidth <= 680;
+      if (isMobile) {
+        const isOpen = wrapper.classList.contains("open");
+        document.querySelectorAll(".card-wrapper.open").forEach(w => {
+          w.classList.remove("open");
+          w.querySelector(".accordion-body").classList.remove("open");
+          w.querySelector(".card").classList.remove("active");
+        });
+        if (!isOpen) {
+          wrapper.classList.add("open");
+          acc.classList.add("open");
+          card.classList.add("active");
+          acc.innerHTML = buildDetail(t);
+        }
+      } else {
+        showDetail(t);
+      }
+    });
+
+    wrapper.appendChild(card);
+    wrapper.appendChild(acc);
+    sidebar.appendChild(wrapper);
   });
 });
 
-function showDetail(t) {
-  document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
-  document.querySelector(`.card[data-id="${t.id}"]`).classList.add("active");
-
+function buildDetail(t) {
   const related = (t.related||[]).map(id => {
     const r = terms.find(x=>x.id===id);
     return r ? `<span class="related-pill" onclick="openById('${r.id}')">${r.title}</span>` : "";
   }).join("");
-
-  detail.innerHTML = `
+  return `
     <span class="tag detail-tag ${t.tagClass}">${t.tag}</span>
     <div class="detail-title-row">
       <div class="detail-title">${t.title}</div>
@@ -326,6 +371,12 @@ function showDetail(t) {
     <div class="detail-example">${t.example}</div>
     ${related ? `<hr class="divider"><div class="detail-section-label">관련 용어</div><div class="detail-related">${related}</div>` : ""}
   `;
+}
+
+function showDetail(t) {
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
+  document.querySelector(`.card[data-id="${t.id}"]`).classList.add("active");
+  detail.innerHTML = buildDetail(t);
   detail.scrollTop = 0;
 }
 
