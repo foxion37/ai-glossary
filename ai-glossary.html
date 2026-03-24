@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 에이전트 용어 사전</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --bg2: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #5a5a56;
+    --text3: #9a9a94;
+    --radius: 12px;
+    --tag-arch-bg: #EEEDFE; --tag-arch-tx: #3C3489;
+    --tag-tool-bg: #E1F5EE; --tag-tool-tx: #085041;
+    --tag-env-bg:  #FAEEDA; --tag-env-tx:  #633806;
+    --tag-agent-bg:#FAECE7; --tag-agent-tx:#4A1B0C;
+    --accent: #534AB7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #181816; --bg2: #222220; --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --text: #e8e6de; --text2: #a0a09a; --text3: #606059;
+      --tag-arch-bg:#26215C; --tag-arch-tx:#CECBF6;
+      --tag-tool-bg:#04342C; --tag-tool-tx:#9FE1CB;
+      --tag-env-bg: #412402; --tag-env-tx: #FAC775;
+      --tag-agent-bg:#4A1B0C; --tag-agent-tx:#F5C4B3;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    padding: 40px 40px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  header p  { font-size: 13px; color: var(--text2); }
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: calc(100vh - 97px);
+  }
+  .sidebar {
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+  }
+  .section-label {
+    font-size: 10px; font-weight: 500; color: var(--text3);
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 14px 8px 6px;
+  }
+  .section-label:first-child { padding-top: 4px; }
+  .card {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 12px; border-radius: var(--radius);
+    cursor: pointer; border: 1px solid transparent;
+    transition: background .12s, border-color .12s;
+    margin-bottom: 4px;
+  }
+  .card:hover { background: var(--bg2); border-color: var(--border); }
+  .card.active {
+    background: var(--bg2);
+    border-color: var(--border2);
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .tag {
+    font-size: 10px; font-weight: 500;
+    padding: 2px 7px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+  }
+  .tag-arch  { background: var(--tag-arch-bg);  color: var(--tag-arch-tx); }
+  .tag-tool  { background: var(--tag-tool-bg);  color: var(--tag-tool-tx); }
+  .tag-env   { background: var(--tag-env-bg);   color: var(--tag-env-tx); }
+  .tag-agent { background: var(--tag-agent-bg); color: var(--tag-agent-tx); }
+  .card-text { min-width: 0; }
+  .card-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .card-short { font-size: 11px; color: var(--text3); }
+  .detail-pane {
+    overflow-y: auto;
+    padding: 40px 48px;
+    display: flex; flex-direction: column; justify-content: flex-start;
+  }
+  .empty-state {
+    margin: auto;
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    line-height: 2;
+  }
+  .empty-state .big { font-size: 32px; margin-bottom: 8px; opacity: .3; }
+  .detail-tag { margin-bottom: 14px; display: inline-block; }
+  .detail-title-row { margin-bottom: 20px; }
+  .detail-title { font-size: 26px; font-weight: 500; color: var(--text); line-height: 1.2; }
+  .detail-subtitle { font-size: 14px; color: var(--text2); margin-top: 4px; }
+  .detail-section-label {
+    font-size: 10px; font-weight: 500; color: var(--text3);
+    letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 8px; margin-top: 24px;
+  }
+  .detail-section-label:first-of-type { margin-top: 0; }
+  .detail-body {
+    font-size: 15px; color: var(--text2); line-height: 1.8;
+    border-left: 2px solid var(--border2);
+    padding-left: 16px;
+  }
+  .detail-example {
+    font-size: 13px; color: var(--text3); line-height: 1.7;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .detail-related {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+  }
+  .related-pill {
+    font-size: 11px; padding: 3px 10px;
+    border: 1px solid var(--border2); border-radius: 20px;
+    color: var(--text2); cursor: pointer;
+    transition: background .1s, color .1s;
+  }
+  .related-pill:hover { background: var(--bg2); color: var(--text); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  @media (max-width: 680px) {
+    .layout { grid-template-columns: 1fr; height: auto; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+    .detail-pane { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI 에이전트 용어 사전</h1>
+  <p>클릭하면 오른쪽에 상세 설명이 나타납니다 · 총 18개 용어</p>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="detail-pane" id="detail">
+    <div class="empty-state">
+      <div class="big">◎</div>
+      왼쪽 카드를 클릭하세요
+    </div>
+  </main>
+</div>
+<script>
+const terms = [
+  // 환경
+  { id:"cli", cat:"env", tag:"환경", tagClass:"tag-env",
+    title:"CLI", short:"커맨드라인 인터페이스",
+    detail:"텍스트 명령어를 직접 입력해 컴퓨터를 제어하는 방식. GUI(버튼·화면)의 반대 개념. Terminal 또는 Shell이라고도 불림.",
+    example:"예: Claude Code, Codex CLI는 터미널에서 명령어로 실행. 'npm install -g' 같은 텍스트를 직접 입력하는 것이 CLI 사용.",
+    related:["ide","api","docker"]
+  },
+  { id:"ide", cat:"env", tag:"환경", tagClass:"tag-env",
+    title:"IDE", short:"통합 개발 환경 (코드 에디터)",
+    detail:"코드 작성·실행·디버깅 기능을 하나로 합친 프로그램. VS Code, Cursor, Xcode가 대표적. AI가 통합된 IDE는 코드 작성 중 바로 AI에게 수정 요청 가능.",
+    example:"예: Cursor는 AI 내장 IDE. 코드를 쓰다가 AI에게 즉시 질문하거나 수정 요청. Claude Code도 IDE와 연동해 사용하는 도구.",
+    related:["cli","mcp","skill"]
+  },
+  { id:"docker", cat:"env", tag:"환경", tagClass:"tag-env",
+    title:"Docker", short:"컨테이너 기반 실행 환경",
+    detail:"앱을 '컨테이너'라는 독립된 박스에 담아 어디서든 동일하게 실행되게 해주는 도구. '내 컴퓨터에서는 됐는데...' 문제를 해결. Mac Mini에 Docker를 설치하면 다양한 서비스를 격리해 운영 가능.",
+    example:"예: n8n, 데이터베이스, API 서버를 각각 Docker 컨테이너로 띄우면 서로 충돌 없이 독립 운영. Mac Mini 서버 구성의 핵심.",
+    related:["cli","cicd","webhook"]
+  },
+  { id:"cicd", cat:"env", tag:"환경", tagClass:"tag-env",
+    title:"CI/CD", short:"자동 테스트 및 배포 파이프라인",
+    detail:"코드를 올리면(Push) 자동으로 테스트하고 서버에 배포하는 과정. CI(지속적 통합)는 자동 테스트, CD(지속적 배포)는 자동 배포. GitHub Actions가 대표 도구.",
+    example:"예: GitHub에 코드 push → GitHub Actions 자동 실행 → 테스트 통과 → Mac Mini에 자동 배포. 직접 서버에 접속해 수동 업데이트하는 번거로움 제거.",
+    related:["docker","webhook","api"]
+  },
+  { id:"api", cat:"env", tag:"환경", tagClass:"tag-env",
+    title:"API", short:"서비스 간 통신 규격",
+    detail:"소프트웨어끼리 대화하는 방식을 정한 규격. 'A 서비스에 이렇게 요청하면 이런 답을 준다'는 약속. URL로 요청을 보내고 JSON 데이터를 받는 형태가 대부분.",
+    example:"예: Claude API에 텍스트를 보내면 AI 답변을 받음. n8n에서 Claude API를 호출해 자동화 파이프라인 구성.",
+    related:["webhook","mcp","rag"]
+  },
+  { id:"webhook", cat:"env", tag:"환경", tagClass:"tag-env",
+    title:"웹훅 (Webhook)", short:"이벤트 발생 시 자동 알림 신호",
+    detail:"어떤 사건이 발생했을 때 지정된 URL로 자동으로 신호(HTTP 요청)를 보내는 방식. '이거 일어나면 저기 알려줘'를 자동화. Push 방식이라 폴링보다 효율적.",
+    example:"예: GitHub에 코드 push → n8n 웹훅 수신 → Claude API 호출 → PR 리뷰 자동 생성. 건멍님 자동화 파이프라인의 시작점.",
+    related:["api","cicd","orchestrator"]
+  },
+
+  // 확장
+  { id:"mcp", cat:"func", tag:"확장", tagClass:"tag-tool",
+    title:"MCP", short:"Model Context Protocol",
+    detail:"AI가 외부 도구·서비스에 연결되는 표준 규격. Anthropic이 만든 '플러그 규격'. AI가 파일 시스템, 브라우저, API, 데이터베이스를 직접 다룰 수 있게 연결.",
+    example:"예: Claude에 파일 시스템 MCP 서버를 연결하면 대화하면서 실제 파일을 열거나 저장 가능. USB 포트처럼 표준화된 AI 연결 방식.",
+    related:["plugin","tool","subagent"]
+  },
+  { id:"plugin", cat:"func", tag:"확장", tagClass:"tag-tool",
+    title:"플러그인 (Plugin)", short:"기능을 추가하는 확장 모듈",
+    detail:"기존 소프트웨어에 기능을 덧붙이는 추가 모듈. MCP보다 넓은 개념으로 특정 플랫폼에 종속된 경우가 많음. MCP는 플러그인의 표준화된 현대적 버전.",
+    example:"예: Claude의 Google Drive 연동, VS Code Extension, ChatGPT Plugin이 모두 플러그인 개념. MCP는 이를 AI 생태계 전반에 통일한 것.",
+    related:["mcp","tool","skill"]
+  },
+  { id:"skill", cat:"func", tag:"확장", tagClass:"tag-tool",
+    title:"스킬 (Skill)", short:"AI에게 주어지는 특화 지침",
+    detail:"AI가 특정 작업을 잘 수행하도록 미리 정의된 프롬프트·지침 묶음. MCP가 '연결'이라면 Skill은 '행동 방식'을 정의. Claude는 작업 유형마다 다른 Skill 파일을 참조.",
+    example:"예: '엑셀 만들어줘'를 받으면 SKILL.md를 읽고 그 지침에 따라 작업. DOCX, PPTX, PDF 각각 다른 Skill 적용.",
+    related:["prompt","plugin","mcp"]
+  },
+  { id:"tool", cat:"func", tag:"확장", tagClass:"tag-tool",
+    title:"툴 (Tool / Function Calling)", short:"AI가 호출할 수 있는 함수",
+    detail:"AI가 대화 중 실행할 수 있는 외부 함수. 날씨 조회, 웹 검색, 코드 실행 등. MCP 서버가 제공하는 것들이 Tool의 형태. 개발자가 정의해서 AI에게 제공.",
+    example:"예: Claude가 web_search(), weather_fetch()를 대화 중 자동 판단해 호출. AI 스스로 '이 작업엔 이 툴이 필요하다'고 결정.",
+    related:["mcp","skill","subagent"]
+  },
+  { id:"rag", cat:"func", tag:"확장", tagClass:"tag-tool",
+    title:"RAG", short:"검색 기반 응답 생성",
+    detail:"Retrieval-Augmented Generation. AI가 답하기 전에 관련 문서를 검색해서 참고하는 방식. 컨텍스트 한계를 극복하는 핵심 기술. 내부 문서 기반 챗봇의 핵심.",
+    example:"예: 수백 개 파일이 있는 코드베이스에서 '인증 로직' 질문 → 관련 파일만 검색해 컨텍스트에 넣음 → 정확한 답변.",
+    related:["context","embedding","api"]
+  },
+  { id:"embedding", cat:"func", tag:"확장", tagClass:"tag-tool",
+    title:"임베딩 (Embedding)", short:"텍스트를 숫자 벡터로 변환",
+    detail:"텍스트의 의미를 숫자 배열(벡터)로 표현하는 기술. 의미가 비슷한 텍스트는 숫자도 비슷해짐. RAG의 '검색' 부분이 임베딩을 기반으로 작동.",
+    example:"예: '고양이'와 '냥이'는 다른 글자지만 임베딩 공간에선 가까운 위치. 문서 검색 시 키워드가 아닌 의미로 찾을 수 있는 이유.",
+    related:["rag","context","finetune"]
+  },
+
+  // 에이전트 구조
+  { id:"subagent", cat:"agent", tag:"에이전트", tagClass:"tag-agent",
+    title:"서브에이전트", short:"큰 AI가 위임하는 작은 AI",
+    detail:"복잡한 작업을 처리할 때 메인 AI(오케스트레이터)가 특정 작업을 전담하는 하위 AI에게 위임하는 구조. 팀장-팀원 관계와 유사.",
+    example:"예: Claude가 '리포트 작성' 작업을 받으면 → 웹검색 서브에이전트 → 요약 서브에이전트 → 서식 서브에이전트를 순서대로 호출.",
+    related:["orchestrator","mcp","tool"]
+  },
+  { id:"orchestrator", cat:"agent", tag:"에이전트", tagClass:"tag-agent",
+    title:"오케스트레이터", short:"에이전트들을 지휘하는 메인 AI",
+    detail:"여러 서브에이전트를 조율하고 지시하는 최상위 AI. 어떤 에이전트에게 무슨 일을 시킬지 판단하는 감독 역할. n8n 같은 워크플로우 툴이 이 역할을 하기도 함.",
+    example:"예: Claude Code가 오케스트레이터 역할로 브라우저·파일시스템·터미널을 각각 서브에이전트처럼 제어.",
+    related:["subagent","webhook","cicd"]
+  },
+  { id:"context", cat:"agent", tag:"에이전트", tagClass:"tag-agent",
+    title:"컨텍스트 윈도우", short:"AI의 단기 기억 범위",
+    detail:"AI가 한 번에 처리할 수 있는 텍스트 양. 단기 기억과 비슷. 한계를 넘으면 앞부분을 잊음. Claude 3.5는 약 200K 토큰(책 한 권 분량).",
+    example:"예: 긴 코드베이스를 통째로 넣으면 컨텍스트 초과. 그래서 RAG나 파일 분할로 필요한 부분만 전달하는 것이 중요.",
+    related:["token","rag","prompt"]
+  },
+  { id:"prompt", cat:"agent", tag:"에이전트", tagClass:"tag-agent",
+    title:"프롬프트 / 시스템 프롬프트", short:"AI에게 주는 지침",
+    detail:"AI에게 주는 텍스트 입력. 시스템 프롬프트는 AI의 역할·성격·규칙을 사전 정의하는 숨겨진 지침. Spec 문서를 잘 쓰는 것이 곧 좋은 프롬프트 작성.",
+    example:"예: Claude Code 실행 시 CLAUDE.md에 프로젝트 규칙을 써두면 시스템 프롬프트처럼 동작. Codex에 전달하는 Markdown Spec이 프롬프트.",
+    related:["context","skill","token"]
+  },
+  { id:"token", cat:"agent", tag:"에이전트", tagClass:"tag-agent",
+    title:"토큰 (Token)", short:"AI가 처리하는 텍스트 단위",
+    detail:"AI가 텍스트를 처리하는 최소 단위. 단어보다 작을 수도 있음. '안녕하세요'는 약 3~4토큰. API 비용·컨텍스트 한계를 모두 토큰 기준으로 측정.",
+    example:"예: Claude API 1M 토큰당 $3. '이 문서 토큰이 몇 개야?'를 확인해야 컨텍스트 초과 여부를 알 수 있음. 1토큰 ≈ 영어 단어 0.75개.",
+    related:["context","prompt","api"]
+  },
+  { id:"finetune", cat:"agent", tag:"에이전트", tagClass:"tag-agent",
+    title:"파인튜닝 (Fine-tuning)", short:"AI를 특정 작업에 맞게 재훈련",
+    detail:"기존 AI 모델을 특정 데이터셋으로 추가 학습시켜 특정 분야·스타일에 특화시키는 과정. 프롬프트만으로 안 되는 깊은 행동 변화에 사용.",
+    example:"예: 회사 문체로 작성된 문서 수백 개로 Claude를 파인튜닝 → 회사 톤앤매너를 자동으로 따르는 AI. 일반적으로 RAG로 먼저 시도하고 부족할 때 파인튜닝.",
+    related:["embedding","rag","prompt"]
+  },
+];
+
+const catOrder = ["env","func","agent"];
+const catLabel = { env:"인프라 / 환경", func:"기능 / 확장", agent:"에이전트 구조" };
+const sidebar = document.getElementById("sidebar");
+const detail  = document.getElementById("detail");
+
+catOrder.forEach(cat => {
+  const lbl = document.createElement("div");
+  lbl.className = "section-label";
+  lbl.textContent = catLabel[cat];
+  sidebar.appendChild(lbl);
+
+  terms.filter(t=>t.cat===cat).forEach(t => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.id = t.id;
+    card.innerHTML = `<span class="tag ${t.tagClass}">${t.tag}</span>
+      <div class="card-text">
+        <div class="card-title">${t.title}</div>
+        <div class="card-short">${t.short}</div>
+      </div>`;
+    card.addEventListener("click", () => showDetail(t));
+    sidebar.appendChild(card);
+  });
+});
+
+function showDetail(t) {
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
+  document.querySelector(`.card[data-id="${t.id}"]`).classList.add("active");
+
+  const related = (t.related||[]).map(id => {
+    const r = terms.find(x=>x.id===id);
+    return r ? `<span class="related-pill" onclick="openById('${r.id}')">${r.title}</span>` : "";
+  }).join("");
+
+  detail.innerHTML = `
+    <span class="tag detail-tag ${t.tagClass}">${t.tag}</span>
+    <div class="detail-title-row">
+      <div class="detail-title">${t.title}</div>
+      <div class="detail-subtitle">${t.short}</div>
+    </div>
+    <div class="detail-section-label">개념 설명</div>
+    <div class="detail-body">${t.detail}</div>
+    <div class="detail-section-label" style="margin-top:20px">실제 예시</div>
+    <div class="detail-example">${t.example}</div>
+    ${related ? `<hr class="divider"><div class="detail-section-label">관련 용어</div><div class="detail-related">${related}</div>` : ""}
+  `;
+  detail.scrollTop = 0;
+}
+
+window.openById = function(id) {
+  const t = terms.find(x=>x.id===id);
+  if (t) showDetail(t);
+};
+</script>
+</body>
+</html>
