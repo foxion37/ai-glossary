@@ -41,8 +41,8 @@
     padding: 40px 40px 24px;
     border-bottom: 1px solid var(--border);
   }
-  header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
-  header p  { font-size: 13px; color: var(--text2); }
+  header h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
+  header p  { font-size: 15px; color: var(--text2); }
   .layout {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -53,8 +53,18 @@
     border-right: 1px solid var(--border);
     padding: 20px 16px;
   }
+  .search-input {
+    width: 100%; padding: 8px 12px;
+    border: 1px solid var(--border2); border-radius: var(--radius);
+    background: var(--bg2); color: var(--text);
+    font-size: 15px; outline: none; margin-bottom: 8px;
+    transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text3); }
+  .no-results { font-size: 13px; color: var(--text3); padding: 12px 8px; }
   .section-label {
-    font-size: 10px; font-weight: 500; color: var(--text3);
+    font-size: 12px; font-weight: 500; color: var(--text3);
     letter-spacing: .1em; text-transform: uppercase;
     padding: 14px 8px 6px;
   }
@@ -73,7 +83,7 @@
     box-shadow: 0 1px 4px rgba(0,0,0,.06);
   }
   .tag {
-    font-size: 10px; font-weight: 500;
+    font-size: 12px; font-weight: 500;
     padding: 2px 7px; border-radius: 20px;
     white-space: nowrap; flex-shrink: 0; margin-top: 1px;
   }
@@ -82,8 +92,8 @@
   .tag-env   { background: var(--tag-env-bg);   color: var(--tag-env-tx); }
   .tag-agent { background: var(--tag-agent-bg); color: var(--tag-agent-tx); }
   .card-text { min-width: 0; }
-  .card-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
-  .card-short { font-size: 11px; color: var(--text3); }
+  .card-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .card-short { font-size: 13px; color: var(--text3); }
   .detail-pane {
     overflow-y: auto;
     padding: 40px 48px;
@@ -93,27 +103,27 @@
     margin: auto;
     text-align: center;
     color: var(--text3);
-    font-size: 13px;
+    font-size: 15px;
     line-height: 2;
   }
-  .empty-state .big { font-size: 32px; margin-bottom: 8px; opacity: .3; }
+  .empty-state .big { font-size: 34px; margin-bottom: 8px; opacity: .3; }
   .detail-tag { margin-bottom: 14px; display: inline-block; }
   .detail-title-row { margin-bottom: 20px; }
-  .detail-title { font-size: 26px; font-weight: 500; color: var(--text); line-height: 1.2; }
-  .detail-subtitle { font-size: 14px; color: var(--text2); margin-top: 4px; }
+  .detail-title { font-size: 28px; font-weight: 500; color: var(--text); line-height: 1.2; }
+  .detail-subtitle { font-size: 16px; color: var(--text2); margin-top: 4px; }
   .detail-section-label {
-    font-size: 10px; font-weight: 500; color: var(--text3);
+    font-size: 12px; font-weight: 500; color: var(--text3);
     letter-spacing: .08em; text-transform: uppercase;
     margin-bottom: 8px; margin-top: 24px;
   }
   .detail-section-label:first-of-type { margin-top: 0; }
   .detail-body {
-    font-size: 15px; color: var(--text2); line-height: 1.8;
+    font-size: 17px; color: var(--text2); line-height: 1.8;
     border-left: 2px solid var(--border2);
     padding-left: 16px;
   }
   .detail-example {
-    font-size: 13px; color: var(--text3); line-height: 1.7;
+    font-size: 15px; color: var(--text3); line-height: 1.7;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -123,7 +133,7 @@
     display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
   }
   .related-pill {
-    font-size: 11px; padding: 3px 10px;
+    font-size: 13px; padding: 3px 10px;
     border: 1px solid var(--border2); border-radius: 20px;
     color: var(--text2); cursor: pointer;
     transition: background .1s, color .1s;
@@ -143,7 +153,9 @@
   <p>클릭하면 오른쪽에 상세 설명이 나타납니다 · 총 18개 용어</p>
 </header>
 <div class="layout">
-  <nav class="sidebar" id="sidebar"></nav>
+  <nav class="sidebar" id="sidebar">
+    <input class="search-input" id="search" type="text" placeholder="용어 검색...">
+  </nav>
   <main class="detail-pane" id="detail">
     <div class="empty-state">
       <div class="big">◎</div>
@@ -321,6 +333,41 @@ window.openById = function(id) {
   const t = terms.find(x=>x.id===id);
   if (t) showDetail(t);
 };
+
+document.getElementById("search").addEventListener("input", function() {
+  const q = this.value.trim().toLowerCase();
+  const cards = sidebar.querySelectorAll(".card");
+  const labels = sidebar.querySelectorAll(".section-label");
+  let noResults = sidebar.querySelector(".no-results");
+
+  if (!q) {
+    cards.forEach(c => c.style.display = "");
+    labels.forEach(l => l.style.display = "");
+    if (noResults) noResults.remove();
+    return;
+  }
+
+  labels.forEach(l => l.style.display = "none");
+  let count = 0;
+  cards.forEach(c => {
+    const t = terms.find(x => x.id === c.dataset.id);
+    const match = t && (
+      t.title.toLowerCase().includes(q) ||
+      t.short.toLowerCase().includes(q) ||
+      t.detail.toLowerCase().includes(q)
+    );
+    c.style.display = match ? "" : "none";
+    if (match) count++;
+  });
+
+  if (!noResults) {
+    noResults = document.createElement("div");
+    noResults.className = "no-results";
+    sidebar.appendChild(noResults);
+  }
+  noResults.textContent = count === 0 ? "검색 결과 없음" : "";
+  noResults.style.display = count === 0 ? "" : "none";
+});
 </script>
 </body>
 </html>
